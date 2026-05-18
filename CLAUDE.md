@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Template repository** for building frontend applications with:
+**Task Management Tool for Small Teams** - A focused, authentication-gated task management application for small teams with clearly separated Admin and Member roles, backed by an in-memory mock data layer (no external API).
 
-- Next.js 16 (App Router) + React 19 + TypeScript 5 (strict)
-- Tailwind CSS 4 + Shadcn UI (via MCP server)
-- Vitest + React Testing Library
-- Production-ready API client for OpenAPI-defined REST endpoints
+**Tech Stack:** Next.js 16 + React 19 + TypeScript 5 + Tailwind CSS 4 + Shadcn UI
 
-Users clone this template and use Claude Code to generate features, components, and API integrations.
+**Backend API:** No backend API — uses mock-only in-memory data store. NextAuth credentials provider handles authentication frontend-only; no BFF endpoint is involved.
+
+**Planned Epics:**
+1. Foundation — Authentication (NextAuth reconciliation, Admin/Member role enum, route guards), Login screen with POPIA consent notice, post-login redirect, and mock data layer with seed tasks and users
+2. Features — Task List (role-filtered), Task Detail (status management, role-conditional editing), Create Task modal (Admin-only, validation), Delete Confirmation dialog, Account/Profile modal with POPIA data-erasure flow
 
 ## Repository Structure
 
