@@ -6,7 +6,7 @@ A focused, authentication-gated task management application for small teams with
 
 ## Epics
 
-1. **Epic 1: Foundation** — Authentication, route protection, role system (Admin/Member), Login screen with POPIA consent notice, post-login redirect, and in-memory mock data layer with seed tasks and users. | Status: Pending | Dir: `epic-1-foundation/`
+1. **Epic 1: Foundation** — Authentication, route protection, role system (Admin/Member), Login screen with POPIA consent notice, post-login redirect, and in-memory mock data layer with seed tasks and users. | Status: In Progress | Dir: `epic-1-foundation/`
 2. **Epic 2: Features** — Task List (role-filtered), Task Detail (status management, role-conditional editing), Create Task modal (Admin-only, with validation), Delete Confirmation dialog, and Account/Profile modal with POPIA data-erasure flow. Cross-cutting NFR coverage (accessibility, performance, responsive layout). | Status: Pending | Dir: `epic-2-features/`
 
 ## Requirements Coverage
@@ -20,3 +20,13 @@ A focused, authentication-gated task management application for small teams with
 
 - Epic 1: Foundation (no dependencies — must be first; provides authentication, role system, and mock data layer that all features depend on)
 - Epic 2: Features (depends on Epic 1 — requires working auth/session, role enum, route guards, and seeded mock data store before any task UI can be built; independent within Epic 2 stories once Epic 1 is complete)
+
+---
+
+## Epic 1 Stories
+
+| # | Title | Route | Status |
+|---|-------|-------|--------|
+| 1 | Auth Reconciliation and Role System | `/auth/signin` | Pending |
+| 2 | TypeScript Types and Mock Data Store | N/A (component) | Pending |
+| 3 | Home Page Setup (Task List Shell) | `/` | Pending |
