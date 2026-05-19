@@ -15,7 +15,7 @@
  * </RoleGate>
  *
  * // Multiple allowed roles
- * <RoleGate allowedRoles={[UserRole.ADMIN, UserRole.POWER_USER]}>
+ * <RoleGate allowedRoles={[UserRole.ADMIN, UserRole.MEMBER]}>
  *   <ManagementTools />
  * </RoleGate>
  *
@@ -28,8 +28,8 @@
  * </RoleGate>
  *
  * // With minimum role (hierarchy-based)
- * <RoleGate minimumRole={UserRole.POWER_USER}>
- *   <AdvancedFeatures />
+ * <RoleGate minimumRole={UserRole.MEMBER}>
+ *   <MemberFeatures />
  * </RoleGate>
  *
  * // Any authenticated user

@@ -8,34 +8,25 @@ import type { NextAuthConfig } from 'next-auth';
 /**
  * Authentication Configuration
  *
- * DEVELOPMENT MODE:
- * Demo users are available for testing. See credentials below.
- *
- * PRODUCTION MODE:
- * Demo users are DISABLED. You MUST implement a real authentication provider:
- * 1. Use a database adapter: https://authjs.dev/getting-started/adapters
- * 2. Or configure OAuth providers (Google, Azure AD, etc.)
- *
- * Demo credentials (DEVELOPMENT ONLY):
- * | Email                 | Password    | Role          |
- * |-----------------------|-------------|---------------|
- * | admin@example.com     | Admin123!   | ADMIN         |
- * | power@example.com     | Power123!   | POWER_USER    |
- * | user@example.com      | User123!    | STANDARD_USER |
- * | readonly@example.com  | Reader123!  | READ_ONLY     |
+ * Seed credentials (development + test):
+ * | Email                    | Password    | Role   |
+ * |--------------------------|-------------|--------|
+ * | admin@taskflow.local     | Admin123!   | admin  |
+ * | alice@taskflow.local     | Member123!  | member |
+ * | bob@taskflow.local       | Member123!  | member |
  */
 
 // NEXTAUTH_SECRET validation
 if (!process.env.NEXTAUTH_SECRET) {
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
-      '🚨 SECURITY ERROR: NEXTAUTH_SECRET is not set!\n\n' +
+      'SECURITY ERROR: NEXTAUTH_SECRET is not set!\n\n' +
         'You MUST set NEXTAUTH_SECRET environment variable in production.\n' +
         'Generate one with: openssl rand -base64 32',
     );
   } else {
     console.warn(
-      '⚠️ WARNING: NEXTAUTH_SECRET is not set. Using a default for development only.',
+      'WARNING: NEXTAUTH_SECRET is not set. Using a default for development only.',
     );
   }
 }
@@ -46,44 +37,41 @@ if (
   process.env.NEXTAUTH_SECRET.length < 32
 ) {
   throw new Error(
-    '🚨 SECURITY ERROR: NEXTAUTH_SECRET is too short!\n\n' +
+    'SECURITY ERROR: NEXTAUTH_SECRET is too short!\n\n' +
       'NEXTAUTH_SECRET must be at least 32 characters in production.\n' +
       'Generate one with: openssl rand -base64 32',
   );
 }
 
 /**
- * Demo users - ONLY available in development mode
- * These are automatically disabled in production builds.
+ * FRS-aligned seed users for the Task Management Tool.
+ * These users are available in development and test environments.
+ * Passwords are stored as bcrypt hashes.
  */
-const demoUsers = [
+const seedUsers = [
   {
-    id: '1',
-    email: 'admin@example.com',
+    id: 'user-admin-1',
+    email: 'admin@taskflow.local',
     name: 'Admin User',
-    password: '$2b$10$KeIrQDTJvrTbGsnJhVCNA.AUDy1wuVINdO1ZfVSo31ptnAfPMfbO2', // Admin123!
+    // scan-secrets-ignore - documented seed credential hash (Admin123!)
+    password: '$2b$10$SaOE9.wG9yR9YEJbtyns5OgmaP1ucy7OPhs9mqDY3nALSiISo7YBi',
     role: UserRole.ADMIN,
   },
   {
-    id: '2',
-    email: 'power@example.com',
-    name: 'Power User',
-    password: '$2b$10$daDqYt5RAezYKtDMfNnzBunyvs/W7FRhgVPjvq0SsdOiD1jYBKwZm', // Power123!
-    role: UserRole.POWER_USER,
+    id: 'user-member-1',
+    email: 'alice@taskflow.local',
+    name: 'Alice Member',
+    // scan-secrets-ignore - documented seed credential hash (Member123!)
+    password: '$2b$10$TyvcE6/oWxOLjIbnMdj20OLZRzDeIqNv921zvdIVKStI.Po8c6lTC',
+    role: UserRole.MEMBER,
   },
   {
-    id: '3',
-    email: 'user@example.com',
-    name: 'Standard User',
-    password: '$2b$10$DG4whrMZU7fQm/oIMRom2u8BuyglJ0ZLWKDHN2p.jaAaxvub96E5m', // User123!
-    role: UserRole.STANDARD_USER,
-  },
-  {
-    id: '4',
-    email: 'readonly@example.com',
-    name: 'Read-Only User',
-    password: '$2b$10$7pcgpuizrAyyOcwbT37GruxwFsIg9NOuGcDzDUHjJm2SSCD70TxGy', // Reader123!
-    role: UserRole.READ_ONLY,
+    id: 'user-member-2',
+    email: 'bob@taskflow.local',
+    name: 'Bob Member',
+    // scan-secrets-ignore - documented seed credential hash (Member123!)
+    password: '$2b$10$TyvcE6/oWxOLjIbnMdj20OLZRzDeIqNv921zvdIVKStI.Po8c6lTC',
+    role: UserRole.MEMBER,
   },
 ];
 
@@ -101,12 +89,9 @@ export const authConfig: NextAuthConfig = {
         name: string;
         role: UserRole;
       } | null> {
-        // Demo users are ONLY available in development mode
-        // In production, this credentials provider will always return null
-        // You must implement a real authentication provider for production
         if (process.env.NODE_ENV === 'production') {
           console.error(
-            '🚨 Demo credentials are disabled in production. ' +
+            'Seed credentials are disabled in production. ' +
               'Please configure a real authentication provider.',
           );
           return null;
@@ -116,14 +101,14 @@ export const authConfig: NextAuthConfig = {
           return null;
         }
 
-        // Find user by email (development only)
-        const user = demoUsers.find((u) => u.email === credentials.email);
+        // Find user by email
+        const user = seedUsers.find((u) => u.email === credentials.email);
 
         if (!user) {
           return null;
         }
 
-        // Verify password
+        // Verify password using bcrypt
         const passwordMatch = await bcrypt.compare(
           credentials.password as string,
           user.password,
@@ -142,18 +127,6 @@ export const authConfig: NextAuthConfig = {
         };
       },
     }),
-
-    // TODO: Add OAuth providers for production
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // }),
-
-    // AzureADProvider({
-    //   clientId: process.env.AZURE_AD_CLIENT_ID!,
-    //   clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-    //   tenantId: process.env.AZURE_AD_TENANT_ID!,
-    // }),
   ],
 
   pages: {

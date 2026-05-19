@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -80,10 +79,10 @@ function SignInForm(): React.ReactElement {
         router.push(callbackUrl);
         router.refresh();
       } else {
-        setError(result.error || 'Invalid credentials');
+        setError(result.error || 'Incorrect email or password');
       }
     } catch {
-      setError('An error occurred during sign in');
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -94,9 +93,6 @@ function SignInForm(): React.ReactElement {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -147,13 +143,14 @@ function SignInForm(): React.ReactElement {
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <div className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account?{' '}
-              <Link
-                href="/auth/signup"
-                className="text-primary hover:underline"
-              >
-                Sign up
+            <div className="space-y-2 text-center">
+              <p className="text-xs text-muted-foreground">
+                We collect your name and email address for task assignment and
+                team management purposes in accordance with the Protection of
+                Personal Information Act (POPIA).
+              </p>
+              <Link href="#" className="text-xs text-primary hover:underline">
+                Privacy Policy
               </Link>
             </div>
           </CardFooter>

@@ -1,52 +1,33 @@
 /**
  * User Role Definitions
  *
- * IMPORTANT: These are example roles for demonstration purposes.
- * Each application should define its own roles based on business requirements.
- *
- * To customize for your project:
- * 1. Update the UserRole enum with your application's specific roles
- * 2. Update the ROLE_HIERARCHY object to define permission levels
- * 3. Update the roleDescriptions with meaningful descriptions
- * 4. Consider role-to-permission mappings for fine-grained access control
+ * Task Management Tool for Small Teams.
+ * Two roles: admin (full access) and member (standard team member access).
  */
 
 /**
- * Example role enum pattern.
- * Replace these with your application's specific roles.
+ * User role enum — exactly admin and member.
+ * Replaces the 4-value template enum per the FRS.
  */
 export enum UserRole {
   /**
-   * Full system access - can manage users, configurations, and all resources
+   * Full system access — can manage users, tasks, and all resources
    */
   ADMIN = 'admin',
 
   /**
-   * Advanced features and bulk operations - can manage resources within their scope
+   * Standard team member access — can view and update assigned tasks
    */
-  POWER_USER = 'power_user',
-
-  /**
-   * Standard access - can create, edit, and delete own resources
-   */
-  STANDARD_USER = 'standard_user',
-
-  /**
-   * View-only access - can only read data, cannot make changes
-   */
-  READ_ONLY = 'read_only',
+  MEMBER = 'member',
 }
 
 /**
  * Role hierarchy defines the privilege level of each role.
  * Higher numbers indicate greater privilege.
- * Used for "at least" permission checks (e.g., "requires power user or higher").
  */
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   [UserRole.ADMIN]: 100,
-  [UserRole.POWER_USER]: 50,
-  [UserRole.STANDARD_USER]: 25,
-  [UserRole.READ_ONLY]: 10,
+  [UserRole.MEMBER]: 10,
 };
 
 /**
@@ -54,16 +35,13 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
  */
 export const roleDescriptions: Record<UserRole, string> = {
   [UserRole.ADMIN]: 'Full system access',
-  [UserRole.POWER_USER]: 'Advanced features and bulk operations',
-  [UserRole.STANDARD_USER]: 'Standard user access',
-  [UserRole.READ_ONLY]: 'View-only access',
+  [UserRole.MEMBER]: 'Standard team member access',
 };
 
 /**
  * Default role assigned to new users if not specified.
- * Customize based on your application's security requirements.
  */
-export const DEFAULT_ROLE = UserRole.STANDARD_USER;
+export const DEFAULT_ROLE = UserRole.MEMBER;
 
 /**
  * Type guard to check if a string is a valid UserRole

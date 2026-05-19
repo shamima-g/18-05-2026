@@ -201,12 +201,14 @@ Its purpose is to:
 | Input | Value |
 | --- | --- |
 | User state | No active session |
-| Browser action | Navigate directly to `/tasks/some-task-id` |
+| Browser action | Navigate directly to `/example` |
 
 | Expected | Value |
 | --- | --- |
 | Final URL | `/auth/signin` |
 | Page shown | Login screen |
+
+> **Note:** The originally proposed `/tasks/some-task-id` cannot be tested in Story 1.1 because the route does not yet exist. The Playwright spec for this story targets `/example` (the only route currently inside the `(protected)/` layout group). Re-verification deferred to Epic 2 when task routes are added inside the `(protected)/` layout group.
 
 ---
 
@@ -239,6 +241,10 @@ Its purpose is to:
 > - Option A: Confirm the table above as-is.
 > - Option B: Amend email addresses, passwords, or add/remove users.
 > Resolution: Option A approved 2026-05-19 by user.
+
+---
+
+> **BA decision resolved (BA-6 — Option A):** Catch-path (unexpected exception) error text on the sign-in form is "Something went wrong. Please try again." This text appears when an unexpected exception is thrown from `signIn()`; it is distinct from BA-3 ("Incorrect email or password") which covers credential-failure responses. Network failures, runtime errors, and any other thrown exceptions from the auth client surface this generic message.
 
 ---
 

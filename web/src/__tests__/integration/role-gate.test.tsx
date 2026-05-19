@@ -43,7 +43,7 @@ function createMockSession(
   return {
     user: {
       id: '1',
-      email: `${role.toLowerCase()}@example.com`,
+      email: `${role}@example.com`,
       name: `${role} User`,
       role,
       ...overrides,
@@ -72,29 +72,29 @@ describe('RoleGate Component', () => {
     });
 
     it('should render when user role is in allowedRoles list', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.POWER_USER));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.ADMIN, UserRole.POWER_USER],
-        children: <div>Management Tools</div>,
+        allowedRoles: [UserRole.ADMIN, UserRole.MEMBER],
+        children: <div>Team Tools</div>,
       });
 
-      expect(result).toEqual(<div>Management Tools</div>);
+      expect(result).toEqual(<div>Team Tools</div>);
     });
 
     it('should render when user meets minimumRole requirement', async () => {
       mockAuth.mockResolvedValue(createMockSession(UserRole.ADMIN));
 
       const result = await RoleGate({
-        minimumRole: UserRole.POWER_USER,
-        children: <div>Advanced Features</div>,
+        minimumRole: UserRole.MEMBER,
+        children: <div>Member Features</div>,
       });
 
-      expect(result).toEqual(<div>Advanced Features</div>);
+      expect(result).toEqual(<div>Member Features</div>);
     });
 
     it('should render for any authenticated user with requireAuth', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
 
       const result = await RoleGate({
         requireAuth: true,
@@ -105,7 +105,7 @@ describe('RoleGate Component', () => {
     });
 
     it('should render when no role requirements specified', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.STANDARD_USER));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
 
       const result = await RoleGate({
         children: <div>Default Content</div>,
@@ -117,7 +117,7 @@ describe('RoleGate Component', () => {
 
   describe('hides children when unauthorized', () => {
     it('should return null when user lacks required role', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
 
       const result = await RoleGate({
         allowedRoles: [UserRole.ADMIN],
@@ -128,11 +128,11 @@ describe('RoleGate Component', () => {
     });
 
     it('should return null when user does not meet minimumRole', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
 
       const result = await RoleGate({
-        minimumRole: UserRole.POWER_USER,
-        children: <div>Advanced Features</div>,
+        minimumRole: UserRole.ADMIN,
+        children: <div>Admin Features</div>,
       });
 
       expect(result).toBeNull();
@@ -142,7 +142,7 @@ describe('RoleGate Component', () => {
       mockAuth.mockResolvedValue(null);
 
       const result = await RoleGate({
-        allowedRoles: [UserRole.STANDARD_USER],
+        allowedRoles: [UserRole.MEMBER],
         children: <div>User Content</div>,
       });
 
@@ -166,7 +166,7 @@ describe('RoleGate Component', () => {
 
   describe('fallback content', () => {
     it('should show fallback when user lacks required role', async () => {
-      mockAuth.mockResolvedValue(createMockSession(UserRole.READ_ONLY));
+      mockAuth.mockResolvedValue(createMockSession(UserRole.MEMBER));
       const fallback = <div>Access Denied</div>;
 
       const result = await RoleGate({

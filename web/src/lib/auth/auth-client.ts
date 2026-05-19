@@ -19,7 +19,7 @@ export async function signIn(
     });
 
     if (result?.error) {
-      return { error: 'Invalid credentials', ok: false };
+      return { error: 'Incorrect email or password', ok: false };
     }
 
     return { ok: true };

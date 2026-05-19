@@ -32,8 +32,8 @@ import type { NextRequest } from 'next/server';
  * - Redirect authenticated users away from auth pages (signin/signup)
  *
  * NOT handled here (moved to layouts):
- * - Authentication checks → See app/dashboard/layout.tsx
- * - Role-based access control → See app/admin/layout.tsx, app/power-user/layout.tsx
+ * - Authentication checks → See app/(protected)/layout.tsx
+ * - Role-based access control → See app/admin/layout.tsx
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;

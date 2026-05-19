@@ -56,20 +56,19 @@ import {
 } from '@/types/roles';
 
 describe('Role Utilities', () => {
-  it('should have correct hierarchy levels (ADMIN > POWER_USER > STANDARD_USER > READ_ONLY)', () => {
+  it('should have correct hierarchy levels (ADMIN > MEMBER)', () => {
     expect(getRoleLevel(UserRole.ADMIN)).toBe(100);
-    expect(getRoleLevel(UserRole.POWER_USER)).toBe(50);
-    expect(getRoleLevel(UserRole.STANDARD_USER)).toBe(25);
-    expect(getRoleLevel(UserRole.READ_ONLY)).toBe(10);
+    expect(getRoleLevel(UserRole.MEMBER)).toBe(10);
   });
 
   it('should validate role strings correctly', () => {
     expect(isValidRole('admin')).toBe(true);
+    expect(isValidRole('member')).toBe(true);
     expect(isValidRole('invalid')).toBe(false);
   });
 
-  it('should default new users to STANDARD_USER', () => {
-    expect(DEFAULT_ROLE).toBe(UserRole.STANDARD_USER);
+  it('should default new users to MEMBER', () => {
+    expect(DEFAULT_ROLE).toBe(UserRole.MEMBER);
   });
 });
 
@@ -77,57 +76,59 @@ describe('Auth Helper Functions', () => {
   it('hasRole - should match exact role only', () => {
     const adminUser = { role: UserRole.ADMIN };
     expect(hasRole(adminUser, UserRole.ADMIN)).toBe(true);
-    expect(hasRole(adminUser, UserRole.POWER_USER)).toBe(false);
+    expect(hasRole(adminUser, UserRole.MEMBER)).toBe(false);
   });
 
   it('hasAnyRole - should match if user has any of the specified roles', () => {
-    const powerUser = { role: UserRole.POWER_USER };
-    expect(hasAnyRole(powerUser, [UserRole.ADMIN, UserRole.POWER_USER])).toBe(
+    const memberUser = { role: UserRole.MEMBER };
+    expect(hasAnyRole(memberUser, [UserRole.ADMIN, UserRole.MEMBER])).toBe(
       true,
     );
-    expect(hasAnyRole(powerUser, [UserRole.ADMIN])).toBe(false);
+    expect(hasAnyRole(memberUser, [UserRole.ADMIN])).toBe(false);
   });
 
   it('hasMinimumRole - should allow higher roles to access lower-level resources', () => {
     const adminUser = { role: UserRole.ADMIN };
-    const readOnlyUser = { role: UserRole.READ_ONLY };
+    const memberUser = { role: UserRole.MEMBER };
 
     // Admin can access everything
-    expect(hasMinimumRole(adminUser, UserRole.READ_ONLY)).toBe(true);
+    expect(hasMinimumRole(adminUser, UserRole.MEMBER)).toBe(true);
     expect(hasMinimumRole(adminUser, UserRole.ADMIN)).toBe(true);
 
-    // Read-only cannot access higher levels
-    expect(hasMinimumRole(readOnlyUser, UserRole.STANDARD_USER)).toBe(false);
-    expect(hasMinimumRole(readOnlyUser, UserRole.READ_ONLY)).toBe(true);
+    // Member cannot access admin-level resources
+    expect(hasMinimumRole(memberUser, UserRole.ADMIN)).toBe(false);
+    expect(hasMinimumRole(memberUser, UserRole.MEMBER)).toBe(true);
   });
 
   it('should return false for null or undefined user', () => {
     expect(hasRole(null, UserRole.ADMIN)).toBe(false);
     expect(hasAnyRole(undefined, [UserRole.ADMIN])).toBe(false);
-    expect(hasMinimumRole(null, UserRole.READ_ONLY)).toBe(false);
+    expect(hasMinimumRole(null, UserRole.MEMBER)).toBe(false);
   });
 });
 
 describe('Resource-Based Access Control', () => {
   it('isAuthorized - should enforce resource-specific permissions', () => {
     const adminUser = { role: UserRole.ADMIN };
-    const standardUser = { role: UserRole.STANDARD_USER };
+    const memberUser = { role: UserRole.MEMBER };
 
     // System settings - admin only
     expect(isAuthorized(adminUser, 'system-settings', 'read')).toBe(true);
-    expect(isAuthorized(standardUser, 'system-settings', 'read')).toBe(false);
+    expect(isAuthorized(memberUser, 'system-settings', 'read')).toBe(false);
 
-    // Documents - role hierarchy applies
-    expect(isAuthorized(standardUser, 'document', 'write')).toBe(true);
-    expect(isAuthorized(standardUser, 'document', 'delete')).toBe(false);
+    // Tasks - members can read and write, only admin can delete
+    expect(isAuthorized(memberUser, 'task', 'read')).toBe(true);
+    expect(isAuthorized(memberUser, 'task', 'write')).toBe(true);
+    expect(isAuthorized(memberUser, 'task', 'delete')).toBe(false);
+    expect(isAuthorized(adminUser, 'task', 'delete')).toBe(true);
   });
 
   it('isAuthorized - should require admin for unknown resources', () => {
     const adminUser = { role: UserRole.ADMIN };
-    const powerUser = { role: UserRole.POWER_USER };
+    const memberUser = { role: UserRole.MEMBER };
 
     expect(isAuthorized(adminUser, 'unknown-resource', 'read')).toBe(true);
-    expect(isAuthorized(powerUser, 'unknown-resource', 'read')).toBe(false);
+    expect(isAuthorized(memberUser, 'unknown-resource', 'read')).toBe(false);
   });
 });
 
@@ -162,7 +163,7 @@ describe('withRoleProtection - API Route Wrapper', () => {
 
   it('should return 403 when user lacks required role', async () => {
     mockAuth.mockResolvedValue({
-      user: { id: '1', role: UserRole.STANDARD_USER },
+      user: { id: '1', role: UserRole.MEMBER },
       expires: new Date().toISOString(),
     });
 
@@ -206,7 +207,7 @@ describe('withRoleProtection - API Route Wrapper', () => {
 
     const handler = createMockHandler();
     const protectedHandler = withRoleProtection(handler, {
-      minimumRole: UserRole.POWER_USER,
+      minimumRole: UserRole.MEMBER,
     });
 
     const response = await protectedHandler(mockRequest);
@@ -216,14 +217,15 @@ describe('withRoleProtection - API Route Wrapper', () => {
   });
 
   it('should return 403 when user does not meet minimum role requirement', async () => {
+    // A user with MEMBER role cannot access ADMIN-level endpoints
     mockAuth.mockResolvedValue({
-      user: { id: '1', role: UserRole.READ_ONLY },
+      user: { id: '1', role: UserRole.MEMBER },
       expires: new Date().toISOString(),
     });
 
     const handler = createMockHandler();
     const protectedHandler = withRoleProtection(handler, {
-      minimumRole: UserRole.POWER_USER,
+      minimumRole: UserRole.ADMIN,
     });
 
     const response = await protectedHandler(mockRequest);
@@ -236,13 +238,13 @@ describe('withRoleProtection - API Route Wrapper', () => {
 
   it('should support roles array option for multiple allowed roles', async () => {
     mockAuth.mockResolvedValue({
-      user: { id: '1', role: UserRole.POWER_USER },
+      user: { id: '1', role: UserRole.MEMBER },
       expires: new Date().toISOString(),
     });
 
     const handler = createMockHandler();
     const protectedHandler = withRoleProtection(handler, {
-      roles: [UserRole.ADMIN, UserRole.POWER_USER],
+      roles: [UserRole.ADMIN, UserRole.MEMBER],
     });
 
     const response = await protectedHandler(mockRequest);
@@ -253,13 +255,13 @@ describe('withRoleProtection - API Route Wrapper', () => {
 
   it('should return 403 when user role is not in allowed roles array', async () => {
     mockAuth.mockResolvedValue({
-      user: { id: '1', role: UserRole.READ_ONLY },
+      user: { id: '1', role: UserRole.MEMBER },
       expires: new Date().toISOString(),
     });
 
     const handler = createMockHandler();
     const protectedHandler = withRoleProtection(handler, {
-      roles: [UserRole.ADMIN, UserRole.POWER_USER],
+      roles: [UserRole.ADMIN],
     });
 
     const response = await protectedHandler(mockRequest);

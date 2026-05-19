@@ -22,23 +22,23 @@
 
 ### Login Screen — Basic Sign-In Flow
 
-- [ ] AC-1: Given I visit any protected route while unauthenticated, when the page loads, then I am redirected to `/auth/signin`.
-- [ ] AC-2: Given I am on the login screen, when I enter valid credentials for a seeded Admin user and submit, then I am redirected to the home page (`/`).
-- [ ] AC-3: Given I am on the login screen, when I enter valid credentials for a seeded Member user and submit, then I am redirected to the home page (`/`).
-- [ ] AC-4: Given I am on the login screen, when I enter incorrect credentials and submit, then I see an error message and I remain on the login screen.
+- [x] AC-1: Given I visit any protected route while unauthenticated, when the page loads, then I am redirected to `/auth/signin`.
+- [x] AC-2: Given I am on the login screen, when I enter valid credentials for a seeded Admin user and submit, then I am redirected to the home page (`/`).
+- [x] AC-3: Given I am on the login screen, when I enter valid credentials for a seeded Member user and submit, then I am redirected to the home page (`/`).
+- [x] AC-4: Given I am on the login screen, when I enter incorrect credentials and submit, then I see an error message and I remain on the login screen.
 
 ### POPIA Consent Notice
 
-- [ ] AC-5: Given I am on the login screen, when the page loads, then I see a statement explaining that my name and email are collected for task assignment and team management purposes.
-- [ ] AC-6: Given I am on the login screen, when the page loads, then I see a link to the privacy policy that is visible without scrolling on a standard desktop viewport.
+- [x] AC-5: Given I am on the login screen, when the page loads, then I see a statement explaining that my name and email are collected for task assignment and team management purposes.
+- [x] AC-6: Given I am on the login screen, when the page loads, then I see a link to the privacy policy that is visible without scrolling on a standard desktop viewport.
 
 ### "Sign Up" Link Removed
 
-- [ ] AC-7: Given I am on the login screen, when the page loads, then there is no "Sign up" or "Create account" link visible anywhere on the page.
+- [x] AC-7: Given I am on the login screen, when the page loads, then there is no "Sign up" or "Create account" link visible anywhere on the page.
 
 ### Role Enum — Admin and Member Only
 
-- [ ] AC-8: Given a user is authenticated, when the application reads their role, then the role is either `admin` or `member`; no other role value is present in the system.
+- [x] AC-8: Given a user is authenticated, when the application reads their role, then the role is either `admin` or `member`; no other role value is present in the system.
 
 ## API Endpoints (from OpenAPI spec)
 

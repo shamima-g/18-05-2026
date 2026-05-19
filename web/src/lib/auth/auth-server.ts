@@ -63,14 +63,14 @@ export async function requireAuth(callbackUrl?: string): Promise<Session> {
  * Requires minimum role level for the current page (hierarchical check).
  * Redirects to forbidden page if user doesn't meet minimum role requirement.
  *
- * Hierarchical: ADMIN (100) can access POWER_USER (50) routes.
+ * Hierarchical: ADMIN (100) can access MEMBER (10) routes.
  *
  * Usage in Server Components:
  * ```tsx
- * export default async function PowerUserPage() {
- *   // Both ADMIN and POWER_USER can access
- *   const session = await requireMinimumRole(UserRole.POWER_USER);
- *   return <div>Power User Features</div>;
+ * export default async function MemberPage() {
+ *   // Both ADMIN and MEMBER can access
+ *   const session = await requireMinimumRole(UserRole.MEMBER);
+ *   return <div>Member Features</div>;
  * }
  * ```
  *
@@ -96,7 +96,7 @@ export async function requireMinimumRole(
  * Requires exact role match for the current page (strict check).
  * Redirects to forbidden page if user doesn't have the exact role.
  *
- * Non-hierarchical: Only ADMIN can access ADMIN routes, not POWER_USER.
+ * Non-hierarchical: Only ADMIN can access ADMIN routes, not MEMBER.
  *
  * Usage in Server Components:
  * ```tsx
@@ -153,9 +153,9 @@ export async function getSession(): Promise<Session | null> {
  * Usage in Server Components:
  * ```tsx
  * export default async function Page() {
- *   const canAccessPowerFeatures = await checkMinimumRole(UserRole.POWER_USER);
- *   if (canAccessPowerFeatures) {
- *     return <PowerUserFeatures />;
+ *   const canAccessMemberFeatures = await checkMinimumRole(UserRole.MEMBER);
+ *   if (canAccessMemberFeatures) {
+ *     return <MemberFeatures />;
  *   }
  *   return <RegularContent />;
  * }

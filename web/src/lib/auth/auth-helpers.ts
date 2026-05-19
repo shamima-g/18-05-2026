@@ -18,14 +18,6 @@ import { auth } from './auth';
  * @param user - The user object from session (must have role field)
  * @param role - The role to check for
  * @returns true if user has the exact role specified
- *
- * @example
- * ```ts
- * const session = await getServerSession();
- * if (hasRole(session?.user, UserRole.ADMIN)) {
- *   // User is an admin
- * }
- * ```
  */
 export function hasRole(
   user: { role: UserRole } | null | undefined,
@@ -41,13 +33,6 @@ export function hasRole(
  * @param user - The user object from session
  * @param roles - Array of roles to check
  * @returns true if user has at least one of the specified roles
- *
- * @example
- * ```ts
- * if (hasAnyRole(session?.user, [UserRole.ADMIN, UserRole.POWER_USER])) {
- *   // User is either admin or power user
- * }
- * ```
  */
 export function hasAnyRole(
   user: { role: UserRole } | null | undefined,
@@ -64,14 +49,6 @@ export function hasAnyRole(
  * @param user - The user object from session
  * @param minimumRole - The minimum role level required
  * @returns true if user's role level is >= minimum role level
- *
- * @example
- * ```ts
- * // ADMIN (100) and POWER_USER (50) can access, others cannot
- * if (hasMinimumRole(session?.user, UserRole.POWER_USER)) {
- *   // User has power user privileges or higher
- * }
- * ```
  */
 export function hasMinimumRole(
   user: { role: UserRole } | null | undefined,
@@ -83,18 +60,10 @@ export function hasMinimumRole(
 
 /**
  * Server-side middleware function to require authentication
- * Redirects to signin if not authenticated
+ * Throws error if not authenticated (use requireAuth from auth-server.ts for
+ * redirect-based protection in Server Components and layouts)
  *
- * @returns Session if authenticated, redirects to signin otherwise
- *
- * @example
- * ```ts
- * // In a Server Component
- * export default async function ProtectedPage() {
- *   const session = await requireAuth();
- *   return <div>Welcome {session.user.name}</div>;
- * }
- * ```
+ * @returns Session if authenticated
  */
 export async function requireAuth(): Promise<Session> {
   const session = await auth();
@@ -110,20 +79,10 @@ export async function requireAuth(): Promise<Session> {
  *
  * @param role - The role required to access the resource
  * @returns Session if user has required role
- * @throws Error if user doesn't have required role or not authenticated
- *
- * @example
- * ```ts
- * export default async function AdminPage() {
- *   const session = await requireRole(UserRole.ADMIN);
- *   return <div>Admin Dashboard</div>;
- * }
- * ```
  */
 export async function requireRole(role: UserRole): Promise<Session> {
   const session = await requireAuth();
   if (!hasRole(session.user, role)) {
-    // Log detailed info server-side, return generic message to client
     console.error(
       `Authorization failed: requires ${role} role, user ${session.user.id} has ${session.user.role}`,
     );
@@ -138,23 +97,12 @@ export async function requireRole(role: UserRole): Promise<Session> {
  *
  * @param minimumRole - The minimum role level required
  * @returns Session if user meets minimum role requirement
- * @throws Error if user doesn't meet requirement or not authenticated
- *
- * @example
- * ```ts
- * export default async function PowerUserPage() {
- *   // ADMIN and POWER_USER can access
- *   const session = await requireMinimumRole(UserRole.POWER_USER);
- *   return <div>Power User Features</div>;
- * }
- * ```
  */
 export async function requireMinimumRole(
   minimumRole: UserRole,
 ): Promise<Session> {
   const session = await requireAuth();
   if (!hasMinimumRole(session.user, minimumRole)) {
-    // Log detailed info server-side, return generic message to client
     console.error(
       `Authorization failed: requires minimum ${minimumRole} role (level ${getRoleLevel(minimumRole)}), user ${session.user.id} has ${session.user.role} (level ${getRoleLevel(session.user.role)})`,
     );
@@ -168,20 +116,10 @@ export async function requireMinimumRole(
  *
  * @param roles - Array of acceptable roles
  * @returns Session if user has one of the specified roles
- * @throws Error if user doesn't have any of the required roles
- *
- * @example
- * ```ts
- * export default async function ManagementPage() {
- *   const session = await requireAnyRole([UserRole.ADMIN, UserRole.POWER_USER]);
- *   return <div>Management Dashboard</div>;
- * }
- * ```
  */
 export async function requireAnyRole(roles: UserRole[]): Promise<Session> {
   const session = await requireAuth();
   if (!hasAnyRole(session.user, roles)) {
-    // Log detailed info server-side, return generic message to client
     console.error(
       `Authorization failed: requires one of ${roles.join(', ')}, user ${session.user.id} has ${session.user.role}`,
     );
@@ -196,33 +134,6 @@ export async function requireAnyRole(roles: UserRole[]): Promise<Session> {
  * @param handler - The API route handler function
  * @param options - Protection options (role, minimumRole, or roles array)
  * @returns Wrapped handler with authorization checks
- *
- * @example
- * ```ts
- * // Protect route requiring admin role
- * export const GET = withRoleProtection(
- *   async (request) => {
- *     return NextResponse.json({ data: 'sensitive data' });
- *   },
- *   { role: UserRole.ADMIN }
- * );
- *
- * // Protect route requiring minimum power user level
- * export const POST = withRoleProtection(
- *   async (request) => {
- *     return NextResponse.json({ success: true });
- *   },
- *   { minimumRole: UserRole.POWER_USER }
- * );
- *
- * // Protect route requiring any of specified roles
- * export const DELETE = withRoleProtection(
- *   async (request) => {
- *     return NextResponse.json({ deleted: true });
- *   },
- *   { roles: [UserRole.ADMIN, UserRole.POWER_USER] }
- * );
- * ```
  */
 export function withRoleProtection(
   handler: (request: NextRequest) => Promise<NextResponse>,
@@ -239,7 +150,6 @@ export function withRoleProtection(
         );
       }
 
-      // Check role requirements
       if (options.role && !hasRole(session.user, options.role)) {
         console.error(
           `API authorization failed: requires ${options.role} role, user ${session.user.id} has ${session.user.role}`,
@@ -273,7 +183,6 @@ export function withRoleProtection(
         );
       }
 
-      // Authorization passed, call handler
       return await handler(request);
     } catch (error) {
       console.error('Authorization error:', error);
@@ -286,21 +195,13 @@ export function withRoleProtection(
 }
 
 /**
- * Check if user is authorized to perform an action on a resource
- * This is a flexible pattern for implementing resource-based access control
+ * Check if user is authorized to perform an action on a resource.
+ * Implements resource-based access control for the task management application.
  *
  * @param user - The user object from session
- * @param resource - The resource being accessed (e.g., 'document', 'user-profile')
+ * @param resource - The resource being accessed (e.g., 'task', 'user-profile')
  * @param action - The action being performed (e.g., 'read', 'write', 'delete')
  * @returns true if user is authorized
- *
- * @example
- * ```ts
- * // Implement custom authorization logic
- * if (isAuthorized(session?.user, 'document', 'delete')) {
- *   // User can delete documents
- * }
- * ```
  */
 export function isAuthorized(
   user: { role: UserRole; id?: string } | null | undefined,
@@ -309,30 +210,25 @@ export function isAuthorized(
 ): boolean {
   if (!user) return false;
 
-  // Example authorization rules - customize for your application
   switch (resource) {
     case 'user-profile':
       if (action === 'read') return true; // All authenticated users can read profiles
-      if (action === 'write')
-        return hasMinimumRole(user, UserRole.STANDARD_USER);
+      if (action === 'write') return true; // All authenticated users can update own profile
       if (action === 'delete') return hasRole(user, UserRole.ADMIN);
       if (action === 'admin') return hasRole(user, UserRole.ADMIN);
       break;
 
-    case 'document':
-      if (action === 'read') return hasMinimumRole(user, UserRole.READ_ONLY);
-      if (action === 'write')
-        return hasMinimumRole(user, UserRole.STANDARD_USER);
-      if (action === 'delete') return hasMinimumRole(user, UserRole.POWER_USER);
+    case 'task':
+      if (action === 'read') return true; // All authenticated users can read tasks
+      if (action === 'write') return true; // All authenticated users can update tasks
+      if (action === 'delete') return hasRole(user, UserRole.ADMIN);
       if (action === 'admin') return hasRole(user, UserRole.ADMIN);
       break;
 
     case 'system-settings':
-      // Only admins can access system settings
       return hasRole(user, UserRole.ADMIN);
 
     default:
-      // By default, require admin for unknown resources
       return hasRole(user, UserRole.ADMIN);
   }
 

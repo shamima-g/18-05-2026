@@ -5,7 +5,7 @@
 **Source:** [story-1-auth-reconciliation-test-design.md](./story-1-auth-reconciliation-test-design.md)
 **Epic:** 1 | **Story:** 1
 
-> **BA decisions resolved 2026-05-19.** All five decisions (BA-1 through BA-5) were approved as Option A. This handoff document supersedes the draft; all placeholder comments should be replaced with the concrete values below.
+> **BA decisions resolved 2026-05-19.** All six decisions (BA-1 through BA-6) were approved as Option A. This handoff document supersedes the draft; all placeholder comments should be replaced with the concrete values below.
 
 ## Coverage for WRITE-TESTS
 
@@ -29,6 +29,7 @@ These values are now fully specified. Use them verbatim in test assertions and i
 | BA-3: Credential error message | `"Incorrect email or password"` |
 | BA-4: Seed user credentials | See table below |
 | BA-5: Already-authenticated visits `/auth/signin` | No redirect guard — render the sign-in page normally. Edge Example E3 is **out of scope** for this story; do NOT write a test for it |
+| BA-6: Catch-path (unexpected exception) error message | `"Something went wrong. Please try again."` — distinct from BA-3; surfaces when `signIn()` throws rather than returning a credential-failure response |
 
 ### Seed User Credentials (BA-4)
 
@@ -94,7 +95,9 @@ These items cannot be verified by automated tests and must be checked during QA 
 - [ ] Sign in with `admin@taskflow.local` / `WrongPassword!` → stays on `/auth/signin`, error message `"Incorrect email or password"` visible
 - [ ] Sign in with `nobody@example.com` / `AnyPassword1!` → stays on `/auth/signin`, error message `"Incorrect email or password"` shown (no email-existence disclosure)
 - [ ] Navigate to `/` with no session → browser ends up on `/auth/signin`
-- [ ] Navigate to `/tasks/some-task-id` with no session → browser ends up on `/auth/signin`
+- [ ] Navigate to `/example` with no session → browser ends up on `/auth/signin`
+
+> **Note (item 6):** The originally proposed `/tasks/some-task-id` cannot be tested in Story 1.1 because the route does not yet exist. The Playwright spec targets `/example` (the only route currently inside the `(protected)/` layout group). Re-verification deferred to Epic 2 when task routes are added inside the `(protected)/` layout group.
 
 **Manual browser checks (QA checklist — visual/UX, cannot be automated):**
 - [ ] POPIA purpose statement `"We collect your name and email address for task assignment and team management purposes in accordance with the Protection of Personal Information Act (POPIA)."` is visible on the login screen without scrolling at 1280 px viewport width
