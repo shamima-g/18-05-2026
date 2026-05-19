@@ -61,11 +61,11 @@ No external API — this story builds the mock data layer that replaces a real A
   - `web/src/types/task.ts` — `Task` interface and `TaskStatus` type (`'pending' | 'complete'`).
   - `web/src/types/user.ts` — `User` interface. Note: `role` type must align with the narrowed `UserRole` enum from Story 1.1 (either import `UserRole` or use the literal union `'admin' | 'member'`).
   - `web/src/lib/data/store.ts` — All CRUD functions and seed data.
-- **Seed user credentials must match `auth.config.ts`:** The three suggested accounts from Story 1.1 should appear here with consistent IDs and emails:
-  - `{ id: 'u1', name: 'Admin User', email: 'admin@taskflow.local', role: 'admin' }`
-  - `{ id: 'u2', name: 'Alice Member', email: 'alice@taskflow.local', role: 'member' }`
-  - `{ id: 'u3', name: 'Bob Member', email: 'bob@taskflow.local', role: 'member' }`
-- **Seed tasks (example — implementation may vary):** At minimum 4 tasks; include at least 1 pending and 1 complete across both members. Example coverage: 2 tasks assigned to Alice (1 pending, 1 complete), 2 tasks assigned to Bob (both pending).
+- **Seed user IDs and emails must match `auth.config.ts` exactly** — these are the canonical identities committed by Story 1.1. `session.user.id` returned by NextAuth will equal these IDs; any mismatch breaks role-filtered task access in Epic 2:
+  - `{ id: 'user-admin-1', name: 'Admin User', email: 'admin@taskflow.local', role: 'admin' }`
+  - `{ id: 'user-member-1', name: 'Alice Member', email: 'alice@taskflow.local', role: 'member' }`
+  - `{ id: 'user-member-2', name: 'Bob Member', email: 'bob@taskflow.local', role: 'member' }`
+- **Seed tasks (example — implementation may vary):** At minimum 4 tasks; include at least 1 pending and 1 complete across both members. Example coverage: 2 tasks assigned to `user-member-1` (Alice, 1 pending + 1 complete), 2 tasks assigned to `user-member-2` (Bob, both pending).
 - **`getTaskById` returns `null`**, not `undefined` or a thrown error, for missing IDs. This simplifies null checks in components.
 - **`dueDate` format:** Use ISO date strings (`'2026-06-01'`) for simplicity; components can format for display.
 - **Depends on Story 1.1** — the `UserRole` enum must be narrowed to `admin | member` before this story's types are written, to avoid type mismatches.
